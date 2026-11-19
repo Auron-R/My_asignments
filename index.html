@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Assignment Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <main class="app">
+      <header class="topbar">
+        <div class="topbar-main">
+          <h1>School tools</h1>
+          <div class="topbar-actions">
+            <button id="toggle-form" type="button" aria-expanded="false" aria-controls="assignment-form-panel">
+              Add Assignment
+            </button>
+            <button id="import-button" class="button-secondary" type="button">
+              Restore Page
+            </button>
+            <input id="import-file" type="file" accept="application/json,.json" hidden>
+            <button id="export-button" class="button-secondary" type="button">
+              Download Backup
+            </button>
+            <button id="updates-toggle" class="updates-toggle" type="button"
+              aria-expanded="false" aria-controls="updates-panel" aria-label="Open updates">
+              <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"></path>
+              </svg>
+              <span id="notification-count" class="notification-count">0</span>
+            </button>
+          </div>
+        </div>
+        <nav id="class-tabs" class="class-tabs" role="tablist" aria-label="Classes"></nav>
+        <section id="updates-panel" class="updates-panel" aria-labelledby="updates-heading" hidden>
+          <div class="updates-heading">
+            <h2 id="updates-heading">Updates</h2>
+            <span class="muted">Upcoming and overdue assignments</span>
+          </div>
+          <ul id="reminder-list" class="reminder-list"></ul>
+          <p id="reminder-empty" class="reminder-empty">No assignments due within five days.</p>
+        </section>
+      </header>
+
+      <section id="assignment-form-panel" class="panel form-panel" aria-labelledby="form-heading" hidden>
+        <h2 id="form-heading">Add an assignment</h2>
+        <form id="assignment-form">
+          <input id="assignment-id" type="hidden">
+
+          <label for="title">Assignment</label>
+          <input id="title" name="title" maxlength="160" required
+            placeholder="For example: Read chapter 4">
+
+          <div class="form-row">
+            <div>
+              <label for="course">Class or course <span>(optional)</span></label>
+              <input id="course" name="course" maxlength="100" placeholder="History">
+            </div>
+            <div>
+              <label for="due-date">Due date <span>(optional)</span></label>
+              <input id="due-date" name="dueDate" type="date">
+            </div>
+          </div>
+
+          <label for="points">Points <span>(optional)</span></label>
+          <input id="points" name="points" type="number" min="0" step="any"
+            placeholder="For example: 10">
+
+          <label for="notes">Notes <span>(optional)</span></label>
+          <textarea id="notes" name="notes" rows="3" maxlength="4000"
+            placeholder="Add instructions, links, or other details"></textarea>
+
+          <label for="links">Links <span>(optional, one URL per line)</span></label>
+          <textarea id="links" name="links" rows="2" maxlength="4000"
+            placeholder="https://example.com/resource"></textarea>
+
+          <label for="tag">Status</label>
+          <select id="tag" name="tag">
+            <option value="UN">UN — Unstarted</option>
+            <option value="TI">TI — Turned in</option>
+            <option value="LA">LA — Late</option>
+          </select>
+
+          <fieldset class="category-tags">
+            <legend>Tags <span>(select any that apply)</span></legend>
+            <label><input name="categoryTags" type="checkbox" value="PR"> PR — Project</label>
+            <label><input name="categoryTags" type="checkbox" value="TE"> TE — Test</label>
+            <label><input name="categoryTags" type="checkbox" value="Ma"> Ma — Major assignment</label>
+          </fieldset>
+
+          <div class="form-actions">
+            <button id="save-button" type="submit">Add assignment</button>
+            <button id="cancel-edit" class="button-secondary" type="button" hidden>
+              Cancel edit
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel assignments-panel" aria-labelledby="assignments-heading">
+        <div class="section-heading">
+          <div>
+            <h2 id="assignments-heading">Your assignments</h2>
+            <p id="assignment-count" class="muted">0 assignments</p>
+          </div>
+        </div>
+
+        <div class="assignment-layout">
+          <div class="assignment-browser">
+            <p id="empty-state" class="empty-state">No assignments yet. Use Add assignment in the top bar to get started.</p>
+            <div id="class-panel" role="tabpanel" tabindex="0">
+              <ul id="assignment-list" class="assignment-list"></ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <p id="status" class="status" role="status" aria-live="polite">
+        Assignments are saved in this browser.
+      </p>
+      <p class="storage-note">
+        Storage does not expire automatically, but clearing this browser's site data
+        can erase it. Download a backup to keep a copy or move it to another device.
+      </p>
+    </main>
+  </body>
+</html>
