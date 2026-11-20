@@ -13,7 +13,7 @@
 
 body {
   min-width: 280px;
-  min-height: 100dvh;
+  height: 100vh;
   margin: 0;
   padding: 0 clamp(0.75rem, 2vw, 1.5rem) clamp(2rem, 5dvh, 3.5rem);
   background: #090b10;
