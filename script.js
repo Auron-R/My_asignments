@@ -4,6 +4,13 @@ const CATEGORY_TAG_LABELS = {
   TE: "Test",
   Ma: "Major assignment",
 };
+const STATUS_LABELS = {
+  UN: "Unstarted",
+  UF: "Unfinished",
+  TI: "Turned in",
+  LA: "Late",
+};
+const STATUS_CYCLE = ["UN", "UF", "TI", "LA"];
 
 const form = document.querySelector("#assignment-form");
 const assignmentIdInput = document.querySelector("#assignment-id");
@@ -145,7 +152,24 @@ cancelEditButton.addEventListener("click", () => {
   toggleFormButton.focus();
 });
 
+assignmentList.addEventListener("keydown", (event) => {
+  const statusTrigger = event.target.closest("[data-status-id]");
+  if (!statusTrigger || statusTrigger.tagName === "BUTTON") return;
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    event.stopPropagation();
+    cycleAssignmentStatus(statusTrigger.dataset.statusId);
+  }
+});
+
 assignmentList.addEventListener("click", (event) => {
+  const statusTrigger = event.target.closest("[data-status-id]");
+  if (statusTrigger) {
+    event.stopPropagation();
+    cycleAssignmentStatus(statusTrigger.dataset.statusId);
+    return;
+  }
+
   const summaryButton = event.target.closest("button.assignment-summary");
   if (summaryButton) {
     const expanded = summaryButton.getAttribute("aria-expanded") === "true";
@@ -197,6 +221,28 @@ assignmentList.addEventListener("click", (event) => {
     }
   }
 });
+
+function cycleAssignmentStatus(assignmentId) {
+  if (!storageReady) {
+    showStatus("Storage is unavailable. Restore a backup before making changes.", true);
+    return;
+  }
+
+  const target = assignments.find((item) => item.id === assignmentId);
+  if (!target) return;
+
+  const currentEffective = getEffectiveStatus(target);
+  const currentIndex = STATUS_CYCLE.indexOf(currentEffective);
+  const nextStatus = STATUS_CYCLE[(currentIndex + 1) % STATUS_CYCLE.length];
+
+  const updatedAssignments = assignments.map((item) =>
+    item.id === assignmentId ? { ...item, tag: nextStatus } : item
+  );
+
+  if (saveAssignments(updatedAssignments)) {
+    showStatus(`"${target.title}" marked as ${STATUS_LABELS[nextStatus]} (${nextStatus}).`);
+  }
+}
 
 exportButton.addEventListener("click", () => {
   try {
@@ -289,7 +335,7 @@ function validateAssignments(value) {
         (!Array.isArray(item.categoryTags) ||
           new Set(item.categoryTags).size !== item.categoryTags.length ||
           item.categoryTags.some((tag) => !["PR", "TE", "Ma"].includes(tag)))) ||
-      (item.tag !== undefined && !["UN", "TI", "LA"].includes(item.tag))
+      (item.tag !== undefined && !["UN", "UF", "TI", "LA"].includes(item.tag))
     ) {
       throw new Error("The saved data is invalid or damaged.");
     }
@@ -389,7 +435,7 @@ classTabs.addEventListener("keydown", (event) => {
 
 function createAssignmentRows(assignment, index) {
   const item = document.createElement("li");
-  item.className = `assignment${assignment.tag === "TI" ? " is-turned-in" : ""}`;
+  item.className = `assignment${getEffectiveStatus(assignment) === "TI" ? " is-turned-in" : ""}`;
 
   const summary = document.createElement("button");
   summary.type = "button";
@@ -405,7 +451,13 @@ function createAssignmentRows(assignment, index) {
   summaryMeta.className = "assignment-summary-meta";
   const dueDate = document.createElement("span");
   dueDate.textContent = assignment.dueDate ? formatDate(assignment.dueDate) : "No due date";
-  summaryMeta.append(dueDate, createStatusTag(getEffectiveStatus(assignment)));
+  summaryMeta.append(
+    dueDate,
+    createStatusTag(getEffectiveStatus(assignment), {
+      assignmentId: assignment.id,
+      nestedInButton: true,
+    }),
+  );
   for (const tag of assignment.categoryTags) {
     summaryMeta.append(createCategoryTag(tag));
   }
@@ -425,7 +477,14 @@ function createAssignmentRows(assignment, index) {
     assignment.dueDate ? formatDate(assignment.dueDate) : "Not set",
   );
 
-  appendAssignmentRow(rows, "Status", createStatusTag(getEffectiveStatus(assignment)));
+  appendAssignmentRow(
+    rows,
+    "Status",
+    createStatusTag(getEffectiveStatus(assignment), {
+      assignmentId: assignment.id,
+      nestedInButton: false,
+    }),
+  );
 
   const categoryTags = document.createElement("div");
   categoryTags.className = "category-tag-list";
@@ -520,12 +579,29 @@ function setUpdatesOpen(isOpen) {
   );
 }
 
-function createStatusTag(statusValue) {
-  const tag = document.createElement("span");
-  tag.className = `assignment-tag tag-${statusValue.toLowerCase()}`;
+function createStatusTag(statusValue, options = {}) {
+  const { assignmentId = null, nestedInButton = false } = options;
+  const label = STATUS_LABELS[statusValue];
+  const interactive = Boolean(assignmentId);
+  const tag = document.createElement(interactive && !nestedInButton ? "button" : "span");
+
+  if (tag.tagName === "BUTTON") {
+    tag.type = "button";
+  }
+
+  tag.className = `assignment-tag tag-${statusValue.toLowerCase()}${interactive ? " is-interactive" : ""}`;
   tag.textContent = statusValue;
-  tag.title = { UN: "Unstarted", TI: "Turned in", LA: "Late" }[statusValue];
-  tag.setAttribute("aria-label", `Status: ${tag.title}`);
+  tag.title = interactive ? `Status: ${label} (click to cycle)` : label;
+  tag.setAttribute("aria-label", interactive ? `Status: ${label}. Click to cycle status.` : `Status: ${label}`);
+
+  if (interactive) {
+    tag.dataset.statusId = assignmentId;
+    if (nestedInButton) {
+      tag.setAttribute("role", "button");
+      tag.tabIndex = 0;
+    }
+  }
+
   return tag;
 }
 
