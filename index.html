@@ -6,12 +6,13 @@
     <title>Assignment Tracker</title>
     <link rel="stylesheet" href="style.css">
     <script src="script.js" defer></script>
+    <link rel="icon" type="image/x-icon" href="favicon.png">
   </head>
   <body>
     <main class="app">
       <header class="topbar">
         <div class="topbar-main">
-          <h1>School tools</h1>
+          <h1>Assignment tracker</h1>
           <div class="topbar-actions">
             <button id="toggle-form" type="button" aria-expanded="false" aria-controls="assignment-form-panel">
               Add Assignment
@@ -106,7 +107,7 @@
             <p id="assignment-count" class="muted">0 assignments</p>
           </div>
         </div>
-
+        
         <div class="assignment-layout">
           <div class="assignment-browser">
             <p id="empty-state" class="empty-state">No assignments yet. Use Add assignment in the top bar to get started.</p>
@@ -119,10 +120,6 @@
 
       <p id="status" class="status" role="status" aria-live="polite">
         Assignments are saved in this browser.
-      </p>
-      <p class="storage-note">
-        Storage does not expire automatically, but clearing this browser's site data
-        can erase it. Download a backup to keep a copy or move it to another device.
       </p>
     </main>
   </body>

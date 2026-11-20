@@ -48,7 +48,7 @@ select {
 
 .topbar-main {
   width: min(100%, 72vw);
-  min-width: min(100%, 320px);
+  min-width: min(100%, 3vw);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -166,6 +166,7 @@ h3 {
 .muted,
 .storage-note {
   color: #a4adbd;
+  text-align: center;
 }
 
 .intro {
